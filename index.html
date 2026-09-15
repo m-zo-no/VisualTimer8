@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta name="theme-color" content="#ecf0f5">
+
+  <title>時計トレーニング・かんたん予約 / ±1分</title>
+
+  <link rel="stylesheet" href="./style.css">
+  <script src="./app.js" defer></script>
+</head>
+
+<body>
+  <div id="viewport">
+    <main id="app" class="app">
+      <header class="app-header">
+        <h1>時計トレーニング・かんたん予約 / ±1分</h1>
+
+        <button
+          id="soundButton"
+          class="sound-button"
+          type="button"
+          aria-pressed="false"
+        >
+          音を有効にする
+        </button>
+      </header>
+
+      <div class="main-area">
+        <!-- 左：時計 -->
+        <section
+          class="clock-panel"
+          aria-labelledby="statusTitle"
+        >
+          <div class="clock-heading">
+            <h2 id="statusTitle">現在時刻</h2>
+
+            <p id="statusDescription">
+              活動名を決めて、右側の「＋1分」で時間を設定
+            </p>
+          </div>
+
+          <div id="clockArea" class="clock-area">
+            <canvas
+              id="clockCanvas"
+              width="780"
+              height="650"
+              role="img"
+              aria-label="現在時刻のアナログ時計"
+            ></canvas>
+          </div>
+
+          <div class="clock-buttons">
+            <button
+              id="inputStartButton"
+              class="button button-blue"
+              type="button"
+            >
+              入力スタート
+            </button>
+
+            <button
+              id="playButton"
+              class="button button-green"
+              type="button"
+            >
+              今すぐスタート
+            </button>
+
+            <button
+              id="resetButton"
+              class="button button-gray"
+              type="button"
+              disabled
+            >
+              リセット
+            </button>
+          </div>
+
+          <p id="clockInfo" class="clock-info"></p>
+        </section>
+
+        <!-- 右：活動設定 -->
+        <aside
+          class="settings-panel"
+          aria-labelledby="settingsTitle"
+        >
+          <div class="settings-heading">
+            <h2 id="settingsTitle">活動の設定</h2>
+            <span id="slotCountText">2 / 5 枠</span>
+          </div>
+
+          <div class="slot-buttons">
+            <button
+              id="addSlotButton"
+              class="button button-blue"
+              type="button"
+            >
+              枠を追加
+            </button>
+
+            <button
+              id="removeSlotButton"
+              class="button button-gray"
+              type="button"
+            >
+              枠を削除
+            </button>
+          </div>
+
+          <div
+            id="activityRows"
+            class="activity-rows"
+          ></div>
+
+          <div class="settings-bottom">
+            <p id="totalText" class="total-text">
+              合計：0 / 60 分
+            </p>
+
+            <ul class="panel-notes">
+              <li>「＋1分」だけで設定を始められます。</li>
+              <li>活動は追加した順番に実行します。</li>
+              <li>「−1分」はその活動の最後から減らします。</li>
+              <li>枠の追加・削除は現在時刻の表示中。</li>
+              <li>予約中の変更は「予約を解除」から。</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+
+      <!-- 下：予約操作を横一列で配置 -->
+      <section
+        class="reservation-bar"
+        aria-label="開始予約"
+      >
+        <div class="reservation-block date-block">
+          <strong id="selectedDateText"></strong>
+
+          <button
+            id="addDayButton"
+            class="button button-blue"
+            type="button"
+          >
+            ＋1日
+          </button>
+        </div>
+
+        <div class="reservation-block time-block">
+          <strong>時刻：</strong>
+
+          <button
+            id="hourButton"
+            class="button button-blue time-button"
+            type="button"
+            aria-haspopup="dialog"
+          >
+            0時
+          </button>
+
+          <span class="time-colon">:</span>
+
+          <button
+            id="minuteButton"
+            class="button button-blue time-button"
+            type="button"
+            aria-haspopup="dialog"
+          >
+            00分
+          </button>
+        </div>
+
+        <div class="reservation-block reserve-block">
+          <button
+            id="reserveButton"
+            class="button button-green"
+            type="button"
+          >
+            この日時で予約する
+          </button>
+
+          <button
+            id="cancelReserveButton"
+            class="button button-gray"
+            type="button"
+            disabled
+          >
+            予約を解除
+          </button>
+        </div>
+      </section>
+
+      <footer class="app-footer">
+        <p
+          id="message"
+          class="message"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        ></p>
+
+        <div class="footer-details">
+          <span id="deviceNowText"></span>
+          <span id="reservationStatus"></span>
+          <span id="wakeStatus"></span>
+        </div>
+
+        <p class="usage-note">
+          設定は保存されません。使用中はページを表示したまま、
+          画面ロック・スリープを避けてください。
+        </p>
+      </footer>
+    </main>
+  </div>
+
+  <!-- 数字選択画面はアプリ全体の縮小対象外 -->
+  <dialog
+    id="timeDialog"
+    class="time-dialog"
+    aria-labelledby="pickerTitle"
+    aria-describedby="pickerDescription"
+  >
+    <div class="picker-header">
+      <h2 id="pickerTitle">時を選んでください</h2>
+
+      <button
+        id="pickerCloseButton"
+        class="button button-gray"
+        type="button"
+        autofocus
+      >
+        閉じる
+      </button>
+    </div>
+
+    <p id="pickerDescription" class="picker-description"></p>
+
+    <div id="pickerGrid" class="picker-grid"></div>
+
+    <p class="picker-note">
+      緑色は現在の選択値です。
+      数字を選ぶと閉じます。Escキーでも閉じられます。
+    </p>
+  </dialog>
+</body>
+</html>
